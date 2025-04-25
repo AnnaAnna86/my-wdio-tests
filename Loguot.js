@@ -1,48 +1,56 @@
 describe('🔁 Повний цикл: логін → перевірка → логaут → перевірка', () => {
     it('повинен увійти в систему, перевірити елементи і вийти', async () => {
+
         // 1️⃣ Відкриваємо сторінку логіну
-        console.log('🔵 1. Відкриваємо сторінку логіну')
         await browser.url('https://the-internet.herokuapp.com/login')
+        console.log('🔵 Сторінка логіну відкрита')
 
         // 2️⃣ Вводимо логін і пароль
-        console.log('🟢 2. Вводимо правильний логін і пароль')
         await $('#username').setValue('tomsmith')
         await $('#password').setValue('SuperSecretPassword!')
-        
+        console.log('🟢 Логін і пароль введені')
+
         // 3️⃣ Натискаємо кнопку логіну
-        console.log('🟣 3. Натискаємо кнопку логіну')
         await $('button[type="submit"]').click()
+        console.log('🟣 Натиснута кнопка логіну')
 
-        // 4️⃣ Перевіряємо, що URL змінився
-        console.log('🔵 4. Перевіряємо новий URL')
-        const currentUrl = await browser.getUrl()
-        expect(currentUrl).toContain('/secure')
+        // 4️⃣ Чекаємо на зміну URL
+        await browser.waitUntil(async () => {
+            const url = await browser.getUrl()
+            return url.includes('/secure')
+        }, {
+            timeout: 5000,
+            timeoutMsg: '❌ URL не змінився на /secure'
+        })
+        console.log('🔵 URL змінився успішно')
 
-        // 5️⃣ Перевіряємо, що flash повідомлення містить успіх
-        console.log('🟢 5. Перевіряємо повідомлення про успішний вхід')
+        // 5️⃣ Перевіряємо flash-повідомлення
         const flash = await $('#flash')
-        expect(await flash.getText()).toContain('You logged into a secure area!')
+        const flashText = await flash.getText()
+        console.log('📩 Flash-повідомлення:', flashText)
+        expect(flashText).toContain('You logged into a secure area!')
 
-        // 6️⃣ Натискаємо кнопку Logout
-        console.log('🔴 6. Натискаємо Logout')
-        const logoutButton = await $('a.button.secondary.radius')
-        await logoutButton.click()
+        // 6️⃣ Натискаємо Logout
+        const logoutBtn = await $('a.button.secondary.radius')
+        await logoutBtn.click()
+        console.log('🔴 Натиснуто кнопку Logout')
 
-        // 7️⃣ Перевіряємо, що нас перекинуло назад на логін
-        console.log('🔵 7. Перевіряємо, що ми повернулись на логін')
+        // 7️⃣ Перевіряємо, що нас повернули на логін-сторінку
         const newUrl = await browser.getUrl()
         expect(newUrl).toBe('https://the-internet.herokuapp.com/login')
+        console.log('🔵 Повернулися на сторінку логіну')
 
-        // 8️⃣ Перевіряємо, що кнопка Logout більше не відображається
-        console.log('🟡 8. Перевіряємо, що кнопки Logout вже немає')
+        // 8️⃣ Перевіряємо, що кнопки Logout вже немає
         const logoutExists = await $('a.button.secondary.radius').isExisting()
         expect(logoutExists).toBe(false)
+        console.log('🟡 Кнопка Logout зникла')
 
-        // 9️⃣ Перевіряємо, що знову є повідомлення (але інше)
-        console.log('🟢 9. Перевіряємо повідомлення після Logout')
+        // 9️⃣ Перевіряємо повідомлення після Logout
         const flashAfterLogout = await $('#flash')
-        expect(await flashAfterLogout.getText()).toContain('You logged out of the secure area!')
+        const logoutMessage = await flashAfterLogout.getText()
+        console.log('📩 Повідомлення після Logout:', logoutMessage)
+        expect(logoutMessage).toContain('You logged out of the secure area!')
 
-        console.log('✅ 10. Тест успішно пройшов повний цикл!')
+        console.log('✅ Повний цикл тесту пройшов успішно')
     })
 })
