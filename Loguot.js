@@ -52,6 +52,7 @@ describe('🔁 Повний цикл: логін → перевірка → ло
         expect(logoutMessage).toContain('You logged out of the secure area!')
 
         console.log('✅ Повний цикл тесту пройшов успішно!')
+        console.log('✅ Урра!')
     })
 })
 
